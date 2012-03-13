@@ -8,7 +8,7 @@ import akka.dispatch._
 import akka.actor.{Actor, PoisonPill}
 import akka.actor._
 import akka.dispatch.Dispatchers
-import akka.routing.RoundRobinRouter
+import akka.routing._
 import akka.dispatch.Future
 import akka.pattern._
 import akka.util.Timeout
@@ -19,28 +19,26 @@ class Master(nrOfWorkers: Int) extends Actor {
     
 
 
-// Note this is just a test of 3 categories
-val categories = RegPubParser().getCategoryUrl().take(3)
-val categoryCount = categories.length    
-val router = context.actorOf(Props[Worker].withRouter(RoundRobinRouter(nrOfWorkers)), name = "workerRouter")
+val categories = RegPubParser().getCategoryUrl()
+val router = context.actorOf(Props[Worker]
+.withRouter(RoundRobinRouter(nrOfWorkers)
+.withDispatcher("my-dispatcher")), name = "workerRouter")
+//.withDispatcher("my-dispatcher")
 
 implicit val ec = ExecutionContext.defaultExecutionContext(context.system)
-implicit val timeout = Timeout(10 seconds)
+implicit val timeout = Timeout(8 seconds)
+
     
 def receive = {
 
-  case CategoryData(links, hasNextPage) =>
+  case CategoryData(parent, links, hasNextPage) =>
 
-    links.foreach( url => (router ! Scrap(url, Company) ))
-//    val scrapCompany = links.map( url => (router ? Scrap(url, Company) ).mapTo[Store] )
-//    val futureResult = Future.sequence(scrapCompany)
-//    futureResult onComplete {
-//      case Right(items) =>
-//        println(items.length)
-//      case Left(failure) =>
-//        println(failure)
-//    }
-//    futureResult.pipeTo(router)
+    links.foreach{
+      url => 
+        if (ComponentRegistry.robotStorage.findCompanyUrl(url) == None )
+          router ! Scrap(url, Company)
+    }
+
 
     val nextPageUrl = hasNextPage.getOrElse("")
     if ( nextPageUrl != "")
@@ -50,7 +48,7 @@ def receive = {
   case Calculate =>  
     categories.foreach(router ! Scrap(_, Category))
 
-  case Store(dataItems) =>
+  case Store(parent, dataItems) =>
     println(dataItems.mkString)
     ComponentRegistry.robotStorage.saveOrUpdate(dataItems)
 }

@@ -2,8 +2,12 @@ package com.ecyware.web.robot
 
 trait RobotStorage {
 
-  // Save or update record
+  /** Save or update record */
   def saveOrUpdate(items:Map[String,Object])
+  
+  /** Finds company url item */
+  def findCompanyUrl(url:String):Option[String]
+  
   
   // log failures 
   def logFailure(url:String)

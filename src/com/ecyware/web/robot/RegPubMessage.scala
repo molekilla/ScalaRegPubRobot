@@ -12,5 +12,5 @@ trait RegPubMessage
 
 case object Calculate extends RegPubMessage
 case class Scrap(url:String, level:RegPubSequence) extends RegPubMessage
-case class CategoryData(links:Seq[String], hasNextPage:Option[String]) extends RegPubMessage
-case class Store(dataItems:scala.collection.immutable.Map[String, Object]) extends RegPubMessage
+case class CategoryData(parentUrl:String, links:Seq[String], hasNextPage:Option[String]) extends RegPubMessage
+case class Store(parentUrl:String, dataItems:scala.collection.immutable.Map[String, Object]) extends RegPubMessage

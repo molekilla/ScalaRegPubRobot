@@ -10,7 +10,7 @@ import CompanyPageMappings._
 object RegPubParser  {
   def apply() = new RegPubParser()
 }
-class RegPubParser extends ScalaJHttp {
+class RegPubParser {
 
   val Letters:String = "abcdefghijklmnoprqstuvxyz0123456789"
   val SaDomainUrl:String = "https://www.registro-publico.gob.pa/scripts/nwwisapi.dll/conweb/";
@@ -33,35 +33,35 @@ class RegPubParser extends ScalaJHttp {
 
   
   // parses links and next page into CategoryData response
-  def parseCategory(html:String):CategoryData = {
+  def parseCategory(url:String, html:String):CategoryData = {
     try { 
-    val document = Jsoup.parse(html)
-   
-    // get links
-    val anchors = document.select("a").toSeq
-    val companies = anchors
-    .filter(e => e.attr("href").contains("ID=") && e.attr("href").contains("TODO=SHOW") )
-    .map(e => SaDomainUrl + e.attr("href"))
-    
-    val nextPageSequence = anchors.filter(e => e.text.toLowerCase.trim == "siguiente" )
-    .first.attr("href")
-   
-    val hasNoNextPage = (nextPageSequence.lastIndexOf("START=") + 6 - nextPageSequence.length) == 0
-    if ( hasNoNextPage )
-    {
-      // End 
-      CategoryData(companies, None)
-    } else {
-      val nextPage = SaDomainUrl + nextPageSequence
-      println(nextPage)
-      CategoryData(companies, Some(nextPage))
-    }
+        val document = Jsoup.parse(html)
+       
+        // get links
+        val anchors = document.select("a").toSeq
+        val companies = anchors
+        .filter(e => e.attr("href").contains("ID=") && e.attr("href").contains("TODO=SHOW") )
+        .map(e => SaDomainUrl + e.attr("href"))
+        
+        val nextPageSequence = anchors.filter(e => e.text.toLowerCase.trim == "siguiente" )
+        .first.attr("href")
+       
+        val hasNoNextPage = (nextPageSequence.lastIndexOf("START=") + 6 - nextPageSequence.length) == 0
+        if ( hasNoNextPage )
+        {
+          // End 
+          CategoryData(url, companies, None)
+        } else {
+          val nextPage = SaDomainUrl + nextPageSequence
+          println(nextPage)
+          CategoryData(url, companies, Some(nextPage))
+        }
     }
     catch  {
       case e: Exception =>
           //  Log
           val empty = Seq.empty[String]
-          CategoryData(empty, None)
+          CategoryData(url, empty, None)
     }
   }
   
@@ -70,7 +70,7 @@ class RegPubParser extends ScalaJHttp {
   {
     if ( url.endsWith("&ID=0"))
     {
-      Store(Map.empty[String, String])
+      Store("", Map.empty[String, String])
     }
     try {
     val document = Jsoup.parse(html)
@@ -116,11 +116,11 @@ class RegPubParser extends ScalaJHttp {
         "subscriptores" -> page.getSubscribers,
         "directores" -> page.getDirectors
         ) ++ page.getMicro
-    Store(idMap)
+    Store(url, idMap)
     }
     catch {
       case e: Exception =>
-        Store(Map.empty[String, String])
+        Store("", Map.empty[String, String])
     }
 
   }

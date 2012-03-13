@@ -11,7 +11,8 @@ class RegPubStorage extends RobotStorage {
   val mongoCollection = MongoConnection()("webdata")("regpub")
   val errorLogs = MongoConnection()("webdata")("errorLogs")
   
-  def saveOrUpdate(items:Map[String,Object]) = {
+  
+  def saveOrUpdate(items:Map[String,Object])  {
    // webdata is database
    // regpub is collection
    val dbItems = items.asDBObject
@@ -19,7 +20,7 @@ class RegPubStorage extends RobotStorage {
    if ( existingItems.length == 0 )
    {
      mongoCollection += dbItems
-     println(String.format("Added %s items", existingItems.length.toString))
+     println(String.format("Added %s item(s)", existingItems.length.toString))
    } else {
      // update
      println("Should update if existing")
@@ -35,7 +36,24 @@ class RegPubStorage extends RobotStorage {
     errorLogs += errorLogItem.asDBObject
   }
   
-  // read failures and attempt to get urls again
+  def findCompanyUrl(url:String):Option[String] = {
+
+    val urlParams = url.split("ID=")
+    val ficha = if ( urlParams.length == 2) { urlParams(1) } else { "" }
+ 
+    val cursor = mongoCollection.find(MongoDBObject("ficha" -> ficha))
+    //val items = cursor.map( dbo => dbo.getAs[String]("ficha").get).toSeq
+    
+    if ( cursor.length == 1)
+    {
+      Option(url)
+    } else {
+      None
+    }
+  
+  }
+  
+  /** read failures and attempt to get urls again */
   def readFailedLogs():Seq[String] = {
     Seq.empty[String]
   }
