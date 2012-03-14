@@ -15,15 +15,13 @@ import akka.util.Timeout
 import akka.util.duration._
 import akka.dispatch.{ ExecutionContext, Promise }
 
-class Master(nrOfWorkers: Int) extends Actor {
+class Master(nrOfWorkers: Int) extends Actor with akka.actor.ActorLogging {
     
 
-
-val categories = RegPubParser().getCategoryUrl()
 val router = context.actorOf(Props[Worker]
 .withRouter(RoundRobinRouter(nrOfWorkers)
-.withDispatcher("my-dispatcher")), name = "workerRouter")
-//.withDispatcher("my-dispatcher")
+.withDispatcher("robotDispatcher")), name = "workerRouter")
+
 
 implicit val ec = ExecutionContext.defaultExecutionContext(context.system)
 implicit val timeout = Timeout(8 seconds)
@@ -42,14 +40,27 @@ def receive = {
 
     val nextPageUrl = hasNextPage.getOrElse("")
     if ( nextPageUrl != "")
+    {
       router ! Scrap(nextPageUrl, Category)
+    }
+    else {
+      log.info("category: " + parent)
+      ComponentRegistry.robotStorage.completeCategory(parent)
+      
+      val company = ComponentRegistry.robotStorage.popCategory
+      router ! Scrap(company, Category)
+    }
        
     
   case Calculate =>  
-    categories.foreach(router ! Scrap(_, Category))
+    //categories.foreach(router ! Scrap(_, Category))
+    val categories = RegPubParser().getCategoryUrl()
+    ComponentRegistry.robotStorage.saveCategories(categories)
+    val company = ComponentRegistry.robotStorage.popCategory
+    router ! Scrap(company, Category)
 
   case Store(parent, dataItems) =>
-    println(dataItems.mkString)
+    log.info(dataItems.mkString)
     ComponentRegistry.robotStorage.saveOrUpdate(dataItems)
 }
 

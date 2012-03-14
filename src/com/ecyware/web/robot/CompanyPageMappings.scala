@@ -11,44 +11,38 @@ object CompanyPageMappings {
     def getDignatarios(): Map[String, String] = {
         val trs = seq.get(24).toTableRowsSeq.filter( 
             tr => tr.toTableCellsSeq.get(0).text.trim.length > 0)
-    
-        val builder = Map.newBuilder[String, String]
- 
-        for (tr <- trs) 
+        val list = for (tr <- trs) 
+        yield
         {
             val tds = tr.toTableCellsSeq
-            builder += ("dignatario" -> tds.get(0).text.trim)
-            builder += ( "nombre" -> tds.get(1).text.trim)
+            tds.get(0).text.trim -> tds.get(1).text.trim
         }
 
-        builder.result
+        list.toMap
     }
     
         
-    def getDirectors(): Map[String, String] = {
-        val cells = seq.get(26).toTableCellsSeq.filter(td => td.text.trim.length > 0 )
-    
-        val list =
-        for (td <- cells)
-        yield 
-        {
-            "nombre" -> td.text.trim
-        }
+    def getDirectors(): com.mongodb.BasicDBList = {
+        
+        val cells = seq.get(26).toTableCellsSeq.filter( td => td.hasText).map( td => td.text.trim)
 
-        list.toMap
+        val builder = com.mongodb.casbah.commons.MongoDBList.newBuilder
+        for ( item <- cells  )
+        {
+          builder += item
+        }
+        builder.result
     }
     
-    def getSubscribers(): Map[String, String] = {
-        val cells = seq.get(28).toTableCellsSeq.filter(td => td.text.trim.length > 0 )
-    
-        val list =
-        for (td <- cells)
-        yield 
-        {
-            "nombre" -> td.text.trim
-        }
+    def getSubscribers(): com.mongodb.BasicDBList = {
+        val cells = seq.get(28).toTableCellsSeq.filter( td => td.hasText).map( td => td.text.trim)
 
-        list.toMap
+        val builder = com.mongodb.casbah.commons.MongoDBList.newBuilder
+        for ( item <- cells  )
+        {
+          builder += item
+        }
+        builder.result
     }
     
     def getMicro(): Map[String, String] = {

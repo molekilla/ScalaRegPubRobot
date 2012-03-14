@@ -9,12 +9,17 @@ trait RobotStorage {
   def findCompanyUrl(url:String):Option[String]
   
   
-  // log failures 
+  /** log failures  */
   def logFailure(url:String)
   
   // close failure
   // def closeLogFailure(url:String)
   
-  // read failures and attempt to get urls again
+  /** read failures and attempt to get urls again */
   def readFailedLogs():Seq[String]
+  
+  def saveCategories(categories:Seq[String])
+
+  def popCategory():String
+  def completeCategory(url:String)
 }

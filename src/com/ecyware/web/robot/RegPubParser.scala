@@ -21,6 +21,7 @@ class RegPubParser {
   // For each page until end
   val pageInit = "1"
 
+    /** Creates a sequence of urls, from AAA ... to ZZZ ... to 999*/
   def getCategoryUrl() =  {   
     for (i <- Letters; j <- Letters; k <- Letters)
     yield
@@ -30,9 +31,15 @@ class RegPubParser {
     }
   }
  
+  def getUrlFromCode(code:String):String = {
+    SaUrl.format(code, pageInit)
+  }
 
   
-  // parses links and next page into CategoryData response
+  /** parses links and next page into a CategoryData response
+   * @param url the category url
+   * @param html the extracted HTML
+   *  */
   def parseCategory(url:String, html:String):CategoryData = {
     try { 
         val document = Jsoup.parse(html)
@@ -65,7 +72,10 @@ class RegPubParser {
     }
   }
   
-  // parses company pages
+  /**  Parses a company url
+   * @param url company url
+   * @param html the extracted HTML
+   * */
   def parseCompany(url:String, html:String):Store =
   {
     if ( url.endsWith("&ID=0"))

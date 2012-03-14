@@ -14,8 +14,9 @@ import com.ecyware.web.robot
 
 object Main extends App {
 
-    val customConf = ConfigFactory.parseString("""
-my-dispatcher {
+    //val dispatcherConf =  ConfigFactory.parseFile(new java.io.File("config/dispatch.conf"))
+      val dispatcherConf = ConfigFactory.parseString("""
+robotDispatcher {
   # Dispatcher is the name of the event-based dispatcher
   type = Dispatcher
   # What kind of ExecutionService to use
@@ -35,7 +36,7 @@ my-dispatcher {
   throughput = 5
 }
       """)
-    val system = ActorSystem("RobotSpace", ConfigFactory.load(customConf))
+    val system = ActorSystem("RobotSpace", ConfigFactory.load(dispatcherConf))
     
     val nrOfWorkers = 5
     val master = system.actorOf(Props(new Master(nrOfWorkers)), name = "master")
