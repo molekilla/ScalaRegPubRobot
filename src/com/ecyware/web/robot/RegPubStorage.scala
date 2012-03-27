@@ -6,7 +6,7 @@ import com.mongodb._
 import com.mongodb.ServerAddress
 import scalaj.collection.s2j._
 
-class RegPubStorage extends RobotStorage {
+class RegPubStorage extends RobotStorage with ElasticSearchIndexer {
   com.mongodb.casbah.commons.conversions.scala.RegisterJodaTimeConversionHelpers()
   val mongoCollection = MongoConnection()("webdata")("regpub")
   val errorLogs = MongoConnection()("webdata")("errorLogs")
@@ -58,12 +58,17 @@ class RegPubStorage extends RobotStorage {
   def saveOrUpdate(items:Map[String,Object])  {
    // webdata is database
    // regpub is collection
-   val dbItems = items.asDBObject
-   val existingItems = mongoCollection.find(dbItems) 
-   if ( existingItems.length == 0 )
-   {
-     mongoCollection += dbItems
-     println(String.format("Added %s item(s)", existingItems.length.toString))
+   val ficha = if ( items.containsKey("ficha") ) Some(items("ficha").toString) else None
+   
+   if ( ficha.isDefined ) { 
+       val document = items.asDBObject
+       val existingItems = mongoCollection.find(document) 
+       if ( existingItems.length == 0 )
+       {
+         mongoCollection += document
+         println(String.format("Ficha added: %s", ficha.get))
+       }
+       this.indexRegPubDocument(document, ficha.get)
    }
  }
   

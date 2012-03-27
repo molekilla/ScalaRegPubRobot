@@ -33,12 +33,12 @@ robotDispatcher {
   # Throughput defines the maximum number of messages to be
   # processed per actor before the thread jumps to the next actor.
   # Set to 1 for as fair as possible.
-  throughput = 5
+  throughput = 20
 }
       """)
     val system = ActorSystem("RobotSpace", ConfigFactory.load(dispatcherConf))
     
-    val nrOfWorkers = 5
+    val nrOfWorkers = 10
     val master = system.actorOf(Props(new Master(nrOfWorkers)), name = "master")
     
     // start the calculation

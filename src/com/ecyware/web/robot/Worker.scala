@@ -4,7 +4,7 @@
 package com.ecyware.web.robot
 import akka.actor._
 
-class Worker extends Actor with akka.actor.ActorLogging with ScalaJHttp {
+class Worker extends Actor with akka.actor.ActorLogging with DispatchHttp {
   
     
   def receive = {

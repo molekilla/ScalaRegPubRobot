@@ -53,7 +53,6 @@ def receive = {
        
     
   case Calculate =>  
-    //categories.foreach(router ! Scrap(_, Category))
     val categories = RegPubParser().getCategoryUrl()
     ComponentRegistry.robotStorage.saveCategories(categories)
     val company = ComponentRegistry.robotStorage.popCategory
